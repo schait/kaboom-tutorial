@@ -49,7 +49,7 @@ scene("main", ()=> {
       text: "Score: " + score,
       size: 14,
       font: "sink",
-      pos: vec2(8, 24)
+      pos: vec2(8, 24)  // literally just a screen position: x=8, y=24.
     })
 
     drawText({
@@ -75,6 +75,7 @@ scene("main", ()=> {
     return vec2(distance * Math.cos(radians), -distance * Math.sin(radians));    
   }
   
+  // Anything that moves gets the "mobile" label and this function is called to update it
   onUpdate("mobile", (e) => {
     e.move(pointAt(e.speed, e.angle));
   });
@@ -127,6 +128,7 @@ scene("main", ()=> {
   onKeyDown("up", () => {
     player.speed = Math.min(player.speed+player.acceleration, player.max_thrust);
     play("rocket_thrust", {
+      // play sound
       volume: 0.1,
       speed: 2.0,
     });
@@ -142,9 +144,10 @@ scene("main", ()=> {
 
   // SHOOT CONTROLS + MECHANICS
   onKeyDown("space", () => {
-      if (player.can_shoot) {
+    if (player.can_shoot) {
       add([
         sprite("bullet"),
+        // Starting from center of the ship, add half the width in the direction given by angle
         pos(player.pos.add(pointAt(player.width/2, player.angle))),
         rotate(player.angle),
         origin("center"),
@@ -183,7 +186,7 @@ scene("main", ()=> {
   // COLLISION MECHANICS
   onCollide("player", "asteroid", (p, a) => {
     if (!a.initializing) {
-      p.trigger("damage");
+      p.trigger("damage"); // triggers "damage" event, event is handled elsewhere in code
     }
   });
 
@@ -211,6 +214,7 @@ scene("main", ()=> {
   });
 
   // DAMAGE MECHANICS
+  // Event handler for "damage" event!
   player.on("damage", () => {
     
     if (!player.invulnerable) {
@@ -220,9 +224,7 @@ scene("main", ()=> {
     if (player.lives <= 0) {
       destroy(player);
     }
-      
-    else
-    {
+    else {
       player.invulnerable = true;
 
       wait(player.invulnerability_time, () => {
@@ -261,11 +263,11 @@ scene("main", ()=> {
 
   onDraw("player", (p) => {
     if (player.thrusting) {
+      console.log("Relative Sprite position", pointAt(p.width/2, 180 + p.angle), "angle", p.angle)
       drawSprite( {
         sprite: thrust_animation[player.animation_frame],
-        pos: player.pos.add(pointAt(player.width/2, player.angle)),
+        pos: vec2(-p.width/2, 0), // angle happens automatically, both pos and angle are relative to the player!
         origin: "center",
-        angle: player.angle
       });
     }
   });
@@ -292,7 +294,7 @@ scene("main", ()=> {
   // ASTEROIDS
   
   for (let i = 0; i < NUM_ASTEROIDS; i++) {
-    var spawnPoint = asteroidSpawnPoint();
+    var spawnPoint = asteroidSpawnPoint(); // choose random spawn point
     var a = add([
       sprite("asteroid"),
       pos(spawnPoint),
